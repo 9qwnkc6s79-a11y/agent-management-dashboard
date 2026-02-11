@@ -12,6 +12,7 @@ class AgentDashboard {
         this.modelManager = new ModelManager();
         this.agentTemplates = new AgentTemplates();
         this.costAlerts = new CostAlerts();
+        this.useDemoData = false; // Set to true for static deployment
         this.init();
     }
 
@@ -66,16 +67,27 @@ class AgentDashboard {
     async loadAgents() {
         try {
             showLoadingOverlay();
-            const response = await fetch('/api/data');
             
-            if (response.ok) {
-                const data = await response.json();
-                this.agents = data.agents || [];
-                this.cronJobs = data.cronJobs || [];
-                this.stats = data.stats || this.calculateStats();
+            let data;
+            if (this.useDemoData) {
+                // Use demo data for static deployment
+                data = this.getDemoData();
+            } else {
+                const response = await fetch('/api/data');
                 
-                // Add enhanced metrics
-                this.enhanceAgentData();
+                if (response.ok) {
+                    data = await response.json();
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            }
+            
+            this.agents = data.agents || [];
+            this.cronJobs = data.cronJobs || [];
+            this.stats = data.stats || this.calculateStats();
+            
+            // Add enhanced metrics
+            this.enhanceAgentData();
                 
                 console.log('✅ Loaded live agent data:', data);
             } else {
@@ -888,6 +900,88 @@ class AgentDashboard {
                 state: { nextRunAtMs: Date.now() + 21 * 60 * 60 * 1000 }
             }
         ];
+    }
+
+    getDemoData() {
+        return {
+            agents: [
+                {
+                    id: 'agent:main:main',
+                    name: 'Troy (Main)',
+                    purpose: 'Primary assistant and command center',
+                    model: 'claude-sonnet-4-20250514',
+                    status: 'active',
+                    lastActivity: new Date().toISOString(),
+                    tokens: 90203,
+                    cost: 0.27,
+                    channel: 'telegram'
+                },
+                {
+                    id: 'agent:main:telegram:group:-5251868903',
+                    name: 'Health Tracker',
+                    purpose: 'Fitness tracking and nutrition logging',
+                    model: 'claude-sonnet-4-20250514',
+                    status: 'active',
+                    lastActivity: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                    tokens: 89162,
+                    cost: 0.89,
+                    channel: 'telegram'
+                },
+                {
+                    id: 'agent:main:telegram:group:-5158435516',
+                    name: 'Coffee Operations',
+                    purpose: 'Coffee shop operations and management',
+                    model: 'claude-opus-4-5',
+                    status: 'idle',
+                    lastActivity: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+                    tokens: 124278,
+                    cost: 1.86,
+                    channel: 'telegram'
+                },
+                {
+                    id: 'agent:main:telegram:group:-5194650963',
+                    name: 'Developer Assistant',
+                    purpose: 'Technical discussions and development',
+                    model: 'claude-sonnet-4-20250514',
+                    status: 'offline',
+                    lastActivity: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+                    tokens: 91395,
+                    cost: 0.91,
+                    channel: 'telegram'
+                },
+                {
+                    id: 'agent:main:telegram:group:-5269268988',
+                    name: 'Fitness App Dev',
+                    purpose: 'Fitness application development',
+                    model: 'claude-sonnet-4-20250514',
+                    status: 'offline',
+                    lastActivity: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString(),
+                    tokens: 25864,
+                    cost: 0.26,
+                    channel: 'telegram'
+                },
+                {
+                    id: 'agent:main:telegram:group:-5189755761',
+                    name: 'VivPatch Team',
+                    purpose: 'Wellness patch brand development',
+                    model: 'claude-sonnet-4-20250514',
+                    status: 'offline',
+                    lastActivity: new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString(),
+                    tokens: 28794,
+                    cost: 0.09,
+                    channel: 'telegram'
+                }
+            ],
+            cronJobs: this.getMockCronJobs(),
+            stats: {
+                activeAgents: 2,
+                pendingTasks: 5,
+                totalCost: 4.28,
+                totalTokens: 449696,
+                tokensToday: 44970,
+                burnRate: 1874
+            }
+        };
     }
 
     // Model Management Methods
