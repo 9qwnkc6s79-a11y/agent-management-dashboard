@@ -1,0 +1,28 @@
+{
+  "name": "agent-management-dashboard",
+  "version": "1.0.0",
+  "description": "Professional enterprise agent management dashboard with real-time monitoring and cost analytics",
+  "main": "dashboard.html",
+  "scripts": {
+    "start": "python3 load-data.py --server",
+    "dev": "python3 load-data.py --server",
+    "build": "echo 'No build step required'",
+    "serve": "python3 -m http.server 8001"
+  },
+  "keywords": [
+    "agent",
+    "management",
+    "dashboard", 
+    "AI",
+    "monitoring",
+    "enterprise",
+    "cost-analytics"
+  ],
+  "author": "Daniel Keene",
+  "license": "Private",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danielkeene/agent-management-dashboard.git"
+  },
+  "homepage": "https://agent-management-dashboard.vercel.app"
+}

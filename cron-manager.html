@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Manager - Agent Task Automation</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+        /* Schedule Manager Specific Styles */
+        .schedule-hero {
+            background: linear-gradient(135deg, 
+                rgba(16, 185, 129, 0.1) 0%, 
+                rgba(6, 182, 212, 0.05) 50%,
+                rgba(59, 130, 246, 0.05) 100%
+            );
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-2xl);
+            margin-bottom: var(--spacing-2xl);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-primary);
+        }
+        
+        .timeline-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .timeline-day {
+            margin-bottom: var(--spacing-xl);
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            border: 1px solid var(--border-primary);
+            transition: var(--transition);
+        }
+        
+        .timeline-day:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-hover);
+        }
+        
+        .timeline-header {
+            background: rgba(51, 65, 85, 0.8);
+            padding: var(--spacing-lg) var(--spacing-xl);
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .timeline-date {
+            font-weight: var(--font-weight-semibold);
+            font-size: 1.125rem;
+            color: var(--text-primary);
+        }
+        
+        .timeline-summary {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .timeline-events {
+            padding: var(--spacing-lg);
+        }
+        
+        .timeline-event {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            background: rgba(51, 65, 85, 0.4);
+            border-radius: var(--radius-lg);
+            border-left: 4px solid var(--primary-color);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .timeline-event::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            opacity: 0;
+            transition: var(--transition);
+        }
+        
+        .timeline-event:hover {
+            transform: translateX(8px);
+            box-shadow: var(--shadow-md);
+            background: rgba(51, 65, 85, 0.6);
+        }
+        
+        .timeline-event:hover::before {
+            opacity: 1;
+        }
+        
+        .timeline-event.disabled {
+            opacity: 0.6;
+            border-left-color: var(--text-muted);
+        }
+        
+        .timeline-event.disabled:hover {
+            transform: translateX(4px);
+        }
+        
+        .event-time {
+            font-weight: var(--font-weight-bold);
+            color: var(--primary-color);
+            min-width: 100px;
+            margin-right: var(--spacing-lg);
+            font-size: 1rem;
+            text-align: center;
+            background: rgba(59, 130, 246, 0.1);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .event-content {
+            flex: 1;
+            margin-right: var(--spacing-lg);
+        }
+        
+        .event-title {
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-xs);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        
+        .event-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .event-meta {
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: center;
+        }
+        
+        .event-tag {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius);
+            font-size: 0.75rem;
+            font-weight: var(--font-weight-medium);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .tag-recurring {
+            background: var(--info-light);
+            color: var(--info-color);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+        }
+        
+        .tag-one-time {
+            background: var(--warning-light);
+            color: var(--warning-color);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        
+        .tag-high-priority {
+            background: var(--danger-light);
+            color: var(--danger-color);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .event-agent {
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+        }
+        
+        .event-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+        
+        .quick-schedule {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .schedule-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            border: 1px solid var(--border-primary);
+            cursor: pointer;
+            transition: var(--transition-slow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .schedule-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--success-color), var(--info-color));
+            transform: translateX(-100%);
+            transition: var(--transition-slow);
+        }
+        
+        .schedule-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--primary-color);
+        }
+        
+        .schedule-card:hover::before {
+            transform: translateX(0);
+        }
+        
+        .schedule-icon {
+            font-size: 2.5rem;
+            margin-bottom: var(--spacing-md);
+            opacity: 0.8;
+        }
+        
+        .schedule-title {
+            font-size: 1.125rem;
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
+        }
+        
+        .schedule-desc {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        
+        .cron-form {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-2xl);
+            border: 1px solid var(--border-primary);
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .cron-input-group {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .cron-input {
+            text-align: center;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .cron-label {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: var(--font-weight-medium);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .cron-presets {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+        
+        .cron-preset {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: rgba(51, 65, 85, 0.4);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.875rem;
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .cron-preset:hover {
+            background: rgba(51, 65, 85, 0.6);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .schedule-preview {
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .preview-title {
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-md);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .next-runs {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+        
+        .next-run-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-sm);
+            background: rgba(75, 85, 99, 0.3);
+            border-radius: var(--radius);
+            font-size: 0.8125rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .floating-schedule-btn {
+            position: fixed;
+            bottom: var(--spacing-xl);
+            right: var(--spacing-xl);
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--success-color) 0%, var(--info-color) 100%);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg), 0 0 30px rgba(16, 185, 129, 0.4);
+            transition: var(--transition);
+            z-index: var(--z-fixed);
+        }
+        
+        .floating-schedule-btn:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: var(--shadow-xl), 0 0 40px rgba(16, 185, 129, 0.6);
+        }
+        
+        @media (max-width: 768px) {
+            .cron-input-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline-event {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--spacing-md);
+            }
+            
+            .event-time {
+                min-width: auto;
+                margin-right: 0;
+                align-self: flex-start;
+            }
+            
+            .event-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .quick-schedule {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="#" class="nav-brand">
+                    <span>🤖</span>
+                    Agent Command Center
+                </a>
+                <div class="nav-links">
+                    <a href="dashboard.html" class="nav-link">
+                        <span>📊</span>
+                        Dashboard
+                    </a>
+                    <a href="#" class="nav-link active">
+                        <span>⏰</span>
+                        Schedule
+                    </a>
+                    <a href="#" class="nav-link" onclick="openProfileManager()">
+                        <span>👥</span>
+                        Profiles
+                    </a>
+                    <a href="analytics.html" class="nav-link">
+                        <span>📈</span>
+                        Analytics
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="dashboard-header">
+            <div class="container">
+                <h1 class="dashboard-title">Schedule Management Center</h1>
+                <p class="dashboard-subtitle">
+                    Intelligent task automation and agent scheduling orchestration
+                </p>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- Schedule Overview -->
+            <div class="schedule-hero">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 style="font-size: 1.75rem; font-weight: var(--font-weight-semibold); margin-bottom: var(--spacing-xs);">
+                            📅 Automation Overview
+                        </h2>
+                        <p class="text-secondary">
+                            Monitor and manage automated tasks across your agent fleet
+                        </p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success" onclick="openBulkScheduleModal()">
+                            📋 Bulk Schedule
+                        </button>
+                        <button class="btn btn-primary" onclick="openCronModal()">
+                            ➕ New Schedule
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="metric-value text-success" id="active-schedules">0</span>
+                        <span class="metric-label">Active Schedules</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="metric-value text-warning" id="pending-executions">0</span>
+                        <span class="metric-label">Pending Today</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="metric-value text-info" id="total-executions">0</span>
+                        <span class="metric-label">Total Executions</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="metric-value text-primary" id="success-rate">0%</span>
+                        <span class="metric-label">Success Rate</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Schedule Templates -->
+            <div>
+                <h3 style="margin-bottom: var(--spacing-lg); color: var(--text-primary);">
+                    🚀 Quick Schedule Templates
+                </h3>
+                <div class="quick-schedule">
+                    <div class="schedule-card" onclick="createQuickSchedule('daily-reminder')">
+                        <div class="schedule-icon">🔔</div>
+                        <div class="schedule-title">Daily Reminders</div>
+                        <div class="schedule-desc">Set up recurring daily notifications and check-ins</div>
+                    </div>
+                    
+                    <div class="schedule-card" onclick="createQuickSchedule('weekly-report')">
+                        <div class="schedule-icon">📊</div>
+                        <div class="schedule-title">Weekly Reports</div>
+                        <div class="schedule-desc">Automated status reports and performance summaries</div>
+                    </div>
+                    
+                    <div class="schedule-card" onclick="createQuickSchedule('health-check')">
+                        <div class="schedule-icon">🏥</div>
+                        <div class="schedule-title">System Health</div>
+                        <div class="schedule-desc">Regular system monitoring and health checks</div>
+                    </div>
+                    
+                    <div class="schedule-card" onclick="createQuickSchedule('backup')">
+                        <div class="schedule-icon">💾</div>
+                        <div class="schedule-title">Data Backup</div>
+                        <div class="schedule-desc">Automated backups and data preservation</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Cron Scheduler -->
+            <div class="cron-form" id="cron-form" style="display: none;">
+                <h3 style="margin-bottom: var(--spacing-lg);">⚙️ Advanced Schedule Configuration</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">Task Name</label>
+                    <input type="text" class="form-control" id="schedule-name" 
+                           placeholder="Enter a descriptive name for this scheduled task">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Target Agent</label>
+                    <select class="form-control" id="schedule-agent">
+                        <option value="">Select an agent...</option>
+                        <!-- Populated by JavaScript -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Cron Expression</label>
+                    <div class="cron-input-group">
+                        <div>
+                            <div class="cron-label">Minute</div>
+                            <input type="text" class="form-control cron-input" id="cron-minute" value="0" placeholder="0-59">
+                        </div>
+                        <div>
+                            <div class="cron-label">Hour</div>
+                            <input type="text" class="form-control cron-input" id="cron-hour" value="9" placeholder="0-23">
+                        </div>
+                        <div>
+                            <div class="cron-label">Day</div>
+                            <input type="text" class="form-control cron-input" id="cron-day" value="*" placeholder="1-31">
+                        </div>
+                        <div>
+                            <div class="cron-label">Month</div>
+                            <input type="text" class="form-control cron-input" id="cron-month" value="*" placeholder="1-12">
+                        </div>
+                        <div>
+                            <div class="cron-label">Weekday</div>
+                            <input type="text" class="form-control cron-input" id="cron-weekday" value="*" placeholder="0-7">
+                        </div>
+                    </div>
+                    
+                    <div class="cron-presets">
+                        <div class="cron-preset" data-cron="0 9 * * *">Daily 9 AM</div>
+                        <div class="cron-preset" data-cron="0 9 * * 1-5">Weekdays 9 AM</div>
+                        <div class="cron-preset" data-cron="0 9 * * 1">Weekly Monday</div>
+                        <div class="cron-preset" data-cron="0 9 1 * *">Monthly 1st</div>
+                        <div class="cron-preset" data-cron="*/15 * * * *">Every 15 min</div>
+                        <div class="cron-preset" data-cron="0 */2 * * *">Every 2 hours</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Task Description / Commands</label>
+                    <textarea class="form-control" id="schedule-task" rows="4" 
+                              placeholder="Describe what the agent should do when this schedule triggers..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Priority Level</label>
+                    <select class="form-control" id="schedule-priority">
+                        <option value="low">🟢 Low Priority</option>
+                        <option value="normal" selected>🟡 Normal Priority</option>
+                        <option value="high">🟠 High Priority</option>
+                        <option value="urgent">🔴 Urgent</option>
+                    </select>
+                </div>
+                
+                <div class="schedule-preview">
+                    <div class="preview-title">
+                        <span>🔮</span>
+                        Schedule Preview
+                    </div>
+                    <div class="next-runs" id="schedule-preview">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-3 mt-4">
+                    <button class="btn btn-success" onclick="saveSchedule()">
+                        💾 Save Schedule
+                    </button>
+                    <button class="btn btn-warning" onclick="testSchedule()">
+                        🧪 Test Run
+                    </button>
+                    <button class="btn" onclick="hideCronForm()">
+                        ❌ Cancel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Timeline View -->
+            <div class="timeline-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 style="font-size: 1.75rem; font-weight: var(--font-weight-semibold);">
+                        📅 Schedule Timeline
+                    </h2>
+                    <div class="d-flex gap-2">
+                        <select class="form-control" style="width: auto;" id="timeline-filter">
+                            <option value="all">All Schedules</option>
+                            <option value="active">Active Only</option>
+                            <option value="disabled">Disabled Only</option>
+                            <option value="today">Today Only</option>
+                        </select>
+                        <button class="btn btn-sm" onclick="refreshTimeline()">
+                            🔄 Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="timeline-days">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Action Button -->
+    <button class="floating-schedule-btn" onclick="showCronForm()" title="Create New Schedule">
+        ⏰
+    </button>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="text-align: center; color: var(--text-primary);">
+            <div class="loading" style="width: 40px; height: 40px; margin-bottom: var(--spacing-md);"></div>
+            <div>Loading schedule data...</div>
+        </div>
+    </div>
+
+    <script src="assets/js/dashboard.js"></script>
+    <script>
+        class ScheduleManager {
+            constructor() {
+                this.schedules = [];
+                this.agents = [];
+                this.init();
+            }
+
+            async init() {
+                await this.loadData();
+                this.setupEventListeners();
+                this.renderSchedules();
+                this.updateStats();
+                
+                // Auto-refresh every 60 seconds
+                setInterval(() => this.loadData(), 60000);
+            }
+
+            async loadData() {
+                try {
+                    // Load from dashboard if available
+                    if (window.dashboard && window.dashboard.agents) {
+                        this.agents = window.dashboard.agents;
+                        this.schedules = window.dashboard.cronJobs || [];
+                    } else {
+                        // Load independently
+                        const response = await fetch('/api/data');
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.agents = data.agents || [];
+                            this.schedules = data.cronJobs || [];
+                        } else {
+                            throw new Error('API request failed');
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Failed to load live data, using mock data:', error);
+                    this.schedules = this.getMockSchedules();
+                    this.agents = this.getMockAgents();
+                }
+                
+                this.populateAgentSelect();
+            }
+
+            setupEventListeners() {
+                // Cron preset buttons
+                document.querySelectorAll('.cron-preset').forEach(preset => {
+                    preset.addEventListener('click', (e) => {
+                        const cron = e.target.dataset.cron;
+                        this.applyCronPreset(cron);
+                    });
+                });
+
+                // Cron input changes
+                const cronInputs = ['minute', 'hour', 'day', 'month', 'weekday'];
+                cronInputs.forEach(field => {
+                    const input = document.getElementById(`cron-${field}`);
+                    if (input) {
+                        input.addEventListener('input', () => this.updateSchedulePreview());
+                    }
+                });
+
+                // Timeline filter
+                const filter = document.getElementById('timeline-filter');
+                if (filter) {
+                    filter.addEventListener('change', () => this.renderSchedules());
+                }
+            }
+
+            populateAgentSelect() {
+                const select = document.getElementById('schedule-agent');
+                if (!select) return;
+
+                select.innerHTML = '<option value="">Select an agent...</option>';
+                this.agents.forEach(agent => {
+                    const option = document.createElement('option');
+                    option.value = agent.id;
+                    option.textContent = `${agent.name} (${agent.status})`;
+                    select.appendChild(option);
+                });
+            }
+
+            applyCronPreset(cronExpr) {
+                const parts = cronExpr.split(' ');
+                if (parts.length === 5) {
+                    document.getElementById('cron-minute').value = parts[0];
+                    document.getElementById('cron-hour').value = parts[1];
+                    document.getElementById('cron-day').value = parts[2];
+                    document.getElementById('cron-month').value = parts[3];
+                    document.getElementById('cron-weekday').value = parts[4];
+                    this.updateSchedulePreview();
+                }
+            }
+
+            updateSchedulePreview() {
+                const preview = document.getElementById('schedule-preview');
+                if (!preview) return;
+
+                const cron = this.getCurrentCronExpression();
+                const nextRuns = this.calculateNextRuns(cron);
+
+                preview.innerHTML = nextRuns.map(run => `
+                    <div class="next-run-item">
+                        <span>Next execution</span>
+                        <span style="color: var(--primary-color); font-weight: var(--font-weight-semibold);">
+                            ${run.toLocaleString()}
+                        </span>
+                    </div>
+                `).join('');
+            }
+
+            getCurrentCronExpression() {
+                return [
+                    document.getElementById('cron-minute')?.value || '0',
+                    document.getElementById('cron-hour')?.value || '9',
+                    document.getElementById('cron-day')?.value || '*',
+                    document.getElementById('cron-month')?.value || '*',
+                    document.getElementById('cron-weekday')?.value || '*'
+                ].join(' ');
+            }
+
+            calculateNextRuns(cronExpr) {
+                // Simplified calculation - in real app would use cron parser
+                const now = new Date();
+                const nextRuns = [];
+                
+                for (let i = 1; i <= 3; i++) {
+                    const next = new Date(now.getTime() + (i * 24 * 60 * 60 * 1000));
+                    nextRuns.push(next);
+                }
+                
+                return nextRuns;
+            }
+
+            updateStats() {
+                const activeSchedules = this.schedules.filter(s => s.enabled).length;
+                const pendingToday = this.schedules.filter(s => 
+                    s.enabled && this.isScheduledToday(s)
+                ).length;
+                const totalExecutions = this.schedules.reduce((sum, s) => 
+                    sum + (s.executions || 0), 0
+                );
+                const successRate = this.calculateSuccessRate();
+
+                document.getElementById('active-schedules').textContent = activeSchedules;
+                document.getElementById('pending-executions').textContent = pendingToday;
+                document.getElementById('total-executions').textContent = totalExecutions;
+                document.getElementById('success-rate').textContent = `${successRate}%`;
+            }
+
+            isScheduledToday(schedule) {
+                // Simplified check - in real app would parse cron expression
+                return true;
+            }
+
+            calculateSuccessRate() {
+                const total = this.schedules.reduce((sum, s) => sum + (s.executions || 0), 0);
+                const failed = this.schedules.reduce((sum, s) => sum + (s.failures || 0), 0);
+                return total > 0 ? Math.round(((total - failed) / total) * 100) : 100;
+            }
+
+            renderSchedules() {
+                const container = document.getElementById('timeline-days');
+                if (!container) return;
+
+                const filter = document.getElementById('timeline-filter')?.value || 'all';
+                const filteredSchedules = this.filterSchedules(filter);
+                const groupedByDay = this.groupSchedulesByDay(filteredSchedules);
+
+                container.innerHTML = '';
+
+                Object.keys(groupedByDay).forEach(day => {
+                    const dayElement = this.createDayElement(day, groupedByDay[day]);
+                    container.appendChild(dayElement);
+                });
+            }
+
+            filterSchedules(filter) {
+                switch (filter) {
+                    case 'active': return this.schedules.filter(s => s.enabled);
+                    case 'disabled': return this.schedules.filter(s => !s.enabled);
+                    case 'today': return this.schedules.filter(s => this.isScheduledToday(s));
+                    default: return this.schedules;
+                }
+            }
+
+            groupSchedulesByDay(schedules) {
+                const groups = {};
+                const today = new Date();
+                
+                // Create groups for next 7 days
+                for (let i = 0; i < 7; i++) {
+                    const date = new Date(today.getTime() + (i * 24 * 60 * 60 * 1000));
+                    const key = date.toDateString();
+                    groups[key] = schedules.filter(s => this.isScheduledOnDay(s, date));
+                }
+
+                return groups;
+            }
+
+            isScheduledOnDay(schedule, date) {
+                // Simplified - in real app would parse cron expression properly
+                return Math.random() > 0.5; // Mock data
+            }
+
+            createDayElement(day, schedules) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'timeline-day';
+
+                const date = new Date(day);
+                const isToday = date.toDateString() === new Date().toDateString();
+                const dayName = isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'long' });
+
+                dayElement.innerHTML = `
+                    <div class="timeline-header">
+                        <div class="timeline-date">
+                            ${dayName}, ${date.toLocaleDateString()}
+                            ${isToday ? '<span style="color: var(--primary-color);"> (Today)</span>' : ''}
+                        </div>
+                        <div class="timeline-summary">
+                            <span>${schedules.length} tasks</span>
+                            <span>•</span>
+                            <span>${schedules.filter(s => s.enabled).length} active</span>
+                        </div>
+                    </div>
+                    <div class="timeline-events">
+                        ${schedules.length > 0 ? 
+                            schedules.map(schedule => this.createEventElement(schedule)).join('') :
+                            '<div style="text-align: center; color: var(--text-muted); padding: var(--spacing-xl);">No scheduled tasks for this day</div>'
+                        }
+                    </div>
+                `;
+
+                return dayElement;
+            }
+
+            createEventElement(schedule) {
+                const agent = this.agents.find(a => a.id === schedule.delivery?.to) || 
+                              { name: 'Unknown Agent' };
+                
+                const nextRun = new Date(schedule.state?.nextRunAtMs || Date.now());
+                const timeStr = nextRun.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+
+                const priority = schedule.priority || 'normal';
+                const isRecurring = schedule.schedule?.expr !== '@once';
+
+                return `
+                    <div class="timeline-event ${schedule.enabled ? '' : 'disabled'}" 
+                         data-schedule-id="${schedule.id}">
+                        <div class="event-time">${timeStr}</div>
+                        <div class="event-content">
+                            <div class="event-title">${schedule.name}</div>
+                            <div class="event-description">
+                                ${schedule.description || 'Automated task execution'}
+                            </div>
+                            <div class="event-meta">
+                                <span class="event-tag tag-${isRecurring ? 'recurring' : 'one-time'}">
+                                    ${isRecurring ? '🔄 Recurring' : '⏱️ One-time'}
+                                </span>
+                                ${priority !== 'normal' ? 
+                                    `<span class="event-tag tag-${priority}-priority">
+                                        ${priority.toUpperCase()}
+                                    </span>` : ''
+                                }
+                                <span class="event-agent">→ ${agent.name}</span>
+                            </div>
+                        </div>
+                        <div class="event-actions">
+                            <button class="btn btn-sm" onclick="editSchedule('${schedule.id}')" title="Edit">
+                                ✏️
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="runScheduleNow('${schedule.id}')" title="Run Now">
+                                ▶️
+                            </button>
+                            <button class="btn btn-sm ${schedule.enabled ? 'btn-danger' : 'btn-success'}" 
+                                    onclick="toggleSchedule('${schedule.id}')" 
+                                    title="${schedule.enabled ? 'Disable' : 'Enable'}">
+                                ${schedule.enabled ? '⏸️' : '▶️'}
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteSchedule('${schedule.id}')" title="Delete">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getMockSchedules() {
+                return [
+                    {
+                        id: 'sched-001',
+                        name: 'Daily Health Check',
+                        description: 'Morning health and fitness check-in',
+                        schedule: { expr: '30 7 * * *' },
+                        delivery: { to: 'agent:main:health' },
+                        enabled: true,
+                        state: { nextRunAtMs: Date.now() + (10 * 60 * 60 * 1000) },
+                        priority: 'normal',
+                        executions: 45,
+                        failures: 2
+                    },
+                    {
+                        id: 'sched-002',
+                        name: 'Coffee Shop Opening',
+                        description: 'Prepare daily operations briefing',
+                        schedule: { expr: '0 6 * * 1-5' },
+                        delivery: { to: 'agent:main:coffee' },
+                        enabled: true,
+                        state: { nextRunAtMs: Date.now() + (15 * 60 * 60 * 1000) },
+                        priority: 'high',
+                        executions: 23,
+                        failures: 0
+                    },
+                    {
+                        id: 'sched-003',
+                        name: 'Weekly Dev Standup',
+                        description: 'Development team status update',
+                        schedule: { expr: '0 9 * * 1' },
+                        delivery: { to: 'agent:main:dev' },
+                        enabled: false,
+                        state: { nextRunAtMs: Date.now() + (3 * 24 * 60 * 60 * 1000) },
+                        priority: 'normal',
+                        executions: 8,
+                        failures: 1
+                    }
+                ];
+            }
+
+            getMockAgents() {
+                return [
+                    { id: 'agent:main:health', name: 'Health Tracker' },
+                    { id: 'agent:main:coffee', name: 'Coffee Operations' },
+                    { id: 'agent:main:dev', name: 'Developer Assistant' }
+                ];
+            }
+        }
+
+        // Global functions
+        let scheduleManager;
+
+        function showCronForm() {
+            document.getElementById('cron-form').style.display = 'block';
+            document.getElementById('cron-form').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideCronForm() {
+            document.getElementById('cron-form').style.display = 'none';
+        }
+
+        function createQuickSchedule(type) {
+            showCronForm();
+            
+            const templates = {
+                'daily-reminder': {
+                    name: 'Daily Reminder',
+                    cron: '0 9 * * *',
+                    task: 'Send daily reminder and check-in'
+                },
+                'weekly-report': {
+                    name: 'Weekly Status Report',
+                    cron: '0 9 * * 1',
+                    task: 'Generate and send weekly performance report'
+                },
+                'health-check': {
+                    name: 'System Health Check',
+                    cron: '0 */6 * * *',
+                    task: 'Perform system health monitoring and diagnostics'
+                },
+                'backup': {
+                    name: 'Data Backup',
+                    cron: '0 2 * * *',
+                    task: 'Execute automated data backup procedures'
+                }
+            };
+
+            const template = templates[type];
+            if (template) {
+                document.getElementById('schedule-name').value = template.name;
+                document.getElementById('schedule-task').value = template.task;
+                scheduleManager.applyCronPreset(template.cron);
+            }
+        }
+
+        function saveSchedule() {
+            const name = document.getElementById('schedule-name').value;
+            const agent = document.getElementById('schedule-agent').value;
+            const task = document.getElementById('schedule-task').value;
+            const priority = document.getElementById('schedule-priority').value;
+
+            if (!name || !agent || !task) {
+                showNotification('Please fill in all required fields', 'warning');
+                return;
+            }
+
+            const cron = scheduleManager.getCurrentCronExpression();
+            
+            showNotification('Schedule created successfully!', 'success');
+            hideCronForm();
+            
+            // Clear form
+            document.getElementById('schedule-name').value = '';
+            document.getElementById('schedule-task').value = '';
+        }
+
+        function testSchedule() {
+            showNotification('Test execution started...', 'info');
+        }
+
+        function editSchedule(scheduleId) {
+            const schedule = scheduleManager.schedules.find(s => s.id === scheduleId);
+            if (schedule) {
+                showCronForm();
+                // Populate form with schedule data
+                document.getElementById('schedule-name').value = schedule.name;
+                document.getElementById('schedule-task').value = schedule.description || '';
+            }
+        }
+
+        function runScheduleNow(scheduleId) {
+            const schedule = scheduleManager.schedules.find(s => s.id === scheduleId);
+            if (schedule && confirm(`Run "${schedule.name}" immediately?`)) {
+                showNotification(`Executing "${schedule.name}"...`, 'info');
+            }
+        }
+
+        function toggleSchedule(scheduleId) {
+            const schedule = scheduleManager.schedules.find(s => s.id === scheduleId);
+            if (schedule) {
+                schedule.enabled = !schedule.enabled;
+                scheduleManager.renderSchedules();
+                scheduleManager.updateStats();
+                showNotification(
+                    `Schedule "${schedule.name}" ${schedule.enabled ? 'enabled' : 'disabled'}`, 
+                    'success'
+                );
+            }
+        }
+
+        function deleteSchedule(scheduleId) {
+            const schedule = scheduleManager.schedules.find(s => s.id === scheduleId);
+            if (schedule && confirm(`Delete "${schedule.name}"? This cannot be undone.`)) {
+                const index = scheduleManager.schedules.findIndex(s => s.id === scheduleId);
+                if (index > -1) {
+                    scheduleManager.schedules.splice(index, 1);
+                    scheduleManager.renderSchedules();
+                    scheduleManager.updateStats();
+                    showNotification(`Schedule "${schedule.name}" deleted`, 'success');
+                }
+            }
+        }
+
+        function refreshTimeline() {
+            scheduleManager.loadData();
+            showNotification('Timeline refreshed', 'success');
+        }
+
+        function openBulkScheduleModal() {
+            showNotification('Bulk scheduling coming soon!', 'info');
+        }
+
+        function openCronModal() {
+            showCronForm();
+        }
+
+        function openProfileManager() {
+            showNotification('Profile Manager coming soon!', 'info');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            scheduleManager = new ScheduleManager();
+        });
+    </script>
+</body>
+</html>

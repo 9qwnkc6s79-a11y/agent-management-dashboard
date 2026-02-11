@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Management Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/modern.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="#" class="nav-brand">Agent Command Center</a>
+                <div class="nav-links">
+                    <a href="#" class="nav-link active">Dashboard</a>
+                    <a href="cron-manager.html" class="nav-link">Schedule</a>
+                    <a href="#" class="nav-link" onclick="openProfileManager()">Profiles</a>
+                    <a href="#" class="nav-link" onclick="openAnalytics()">Analytics</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <div class="dashboard-header">
+        <div class="container">
+            <h1 class="dashboard-title">Agent Fleet Overview</h1>
+            <p class="dashboard-subtitle">Monitor, control, and coordinate your AI assistant ecosystem with enterprise-grade precision and intelligence</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Enhanced Search -->
+        <div class="search-container">
+            <div class="search-icon">⌕</div>
+            <input type="text" class="search-input" placeholder="Search agents, templates, or enter commands... (Ctrl+K)" id="global-search">
+        </div>
+        
+        <!-- Cost Alerts -->
+        <div id="cost-alerts">
+            <!-- Populated by JavaScript -->
+        </div>
+
+        <!-- Quick Deploy Templates -->
+        <div class="quick-deploy">
+            <button class="quick-deploy-btn" onclick="deployQuickTemplate('health-coach')">
+                Health Coach
+            </button>
+            <button class="quick-deploy-btn" onclick="deployQuickTemplate('business-analyst')">
+                Business Analyst
+            </button>
+            <button class="quick-deploy-btn" onclick="deployQuickTemplate('customer-support')">
+                Customer Support
+            </button>
+            <button class="quick-deploy-btn" onclick="deployQuickTemplate('content-creator')">
+                Content Creator
+            </button>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+            <div class="stat-card">
+                <span class="metric-value text-success" id="active-agents">0</span>
+                <span class="metric-label">Active Agents</span>
+            </div>
+            <div class="stat-card">
+                <span class="metric-value text-warning" id="pending-tasks">0</span>
+                <span class="metric-label">Pending Tasks</span>
+            </div>
+            <div class="stat-card">
+                <span class="metric-value text-primary" id="daily-cost">$0.00</span>
+                <span class="metric-label">Daily Cost</span>
+            </div>
+            <div class="stat-card">
+                <span class="metric-value text-info" id="total-tokens">0K</span>
+                <span class="metric-label">Total Tokens</span>
+            </div>
+            <div class="stat-card">
+                <span class="metric-value text-warning" id="tokens-today">0K</span>
+                <span class="metric-label">Tokens Today</span>
+            </div>
+            <div class="stat-card">
+                <span class="metric-value text-danger" id="burn-rate">0K/hr</span>
+                <span class="metric-label">Burn Rate</span>
+            </div>
+        </div>
+
+        <!-- Task Assignment Form -->
+        <div class="task-form">
+            <h3 style="margin-bottom: var(--space-md);">Assign Task to Agent</h3>
+            <div class="form-group">
+                <label class="form-label">Select Agent(s)</label>
+                <div class="agent-selector" id="agent-selector">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Task Description</label>
+                <textarea class="form-control task-input" id="task-input" 
+                         placeholder="Describe what you want the agent to do..."></textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" onclick="assignTask()">
+                    Assign Task
+                </button>
+                <button class="btn btn-success" onclick="spawnNewAgent()">
+                    Spawn New Agent
+                </button>
+            </div>
+        </div>
+
+        <!-- Token Analytics Section -->
+        <div class="card token-analytics">
+            <div class="card-header">
+                <h3 class="card-title">Token Usage Analytics</h3>
+                <p class="card-subtitle">Detailed breakdown of token consumption and costs</p>
+            </div>
+            <div style="padding: var(--space-lg);">
+                <div class="grid-2">
+                    <div>
+                        <h4 style="margin-bottom: var(--space-md); color: var(--text-secondary); font-size: 1rem;">Top Token Consumers</h4>
+                        <div class="token-leaderboard" id="token-leaderboard">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: var(--space-md); color: var(--text-secondary); font-size: 1rem;">Usage Trends</h4>
+                        <div style="display: grid; gap: var(--space-md);">
+                            <div class="stat-card" style="padding: var(--space-md);">
+                                <span class="metric-value" id="avg-tokens-per-agent" style="font-size: 1.5rem;">0K</span>
+                                <span class="metric-label">Average per Agent</span>
+                            </div>
+                            <div class="stat-card" style="padding: var(--space-md);">
+                                <span class="metric-value" id="tokens-per-dollar" style="font-size: 1.5rem;">0K</span>
+                                <span class="metric-label">Tokens per $1</span>
+                            </div>
+                            <div class="stat-card" style="padding: var(--space-md);">
+                                <span class="metric-value" id="most-efficient" style="font-size: 1.5rem;">--</span>
+                                <span class="metric-label">Most Efficient Agent</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: var(--space-lg); padding: var(--space-md); background: rgba(245, 158, 11, 0.1); border-radius: var(--radius); border: 1px solid rgba(245, 158, 11, 0.3);">
+                    <h4 style="margin-bottom: var(--space-sm); color: var(--warning); font-size: 0.875rem; display: flex; align-items: center; gap: var(--space-sm);">
+                        Optimization Recommendations
+                    </h4>
+                    <div id="token-recommendations">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Templates -->
+        <div class="card templates-section">
+            <div class="card-header">
+                <h3 class="card-title">Agent Templates</h3>
+                <p class="card-subtitle">Deploy pre-configured agents for common use cases</p>
+            </div>
+            <div class="templates-grid" id="templates-grid">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Agent Grid -->
+        <div class="agent-grid" id="agent-grid">
+            <!-- Populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="floating-add-btn" onclick="openTaskModal()" title="Assign Task">
+        +
+    </button>
+
+    <script src="assets/js/dashboard-enhanced.js"></script>
+    <script src="model-manager.js"></script>
+    <script>
+        // Enhanced initialization with fallback
+        document.addEventListener('DOMContentLoaded', function() {
+            // Try to load enhanced dashboard first
+            if (window.EnterpriseAgentDashboard) {
+                window.enterpriseDashboard = new EnterpriseAgentDashboard();
+                window.enterpriseDashboard.init();
+            } else {
+                // Fallback to basic dashboard
+                loadBasicDashboard();
+            }
+        });
+
+        function openProfileManager() {
+            if (window.enterpriseDashboard) {
+                window.enterpriseDashboard.showNotification('Profile Manager coming soon!', 'info');
+            } else {
+                alert('Profile Manager coming soon!');
+            }
+        }
+
+        function openAnalytics() {
+            if (window.enterpriseDashboard) {
+                window.enterpriseDashboard.showNotification('Analytics dashboard coming soon!', 'info');
+            } else {
+                alert('Analytics dashboard coming soon!');
+            }
+        }
+
+        function openTaskModal() {
+            const taskInput = document.getElementById('task-input');
+            if (taskInput) {
+                taskInput.focus();
+                taskInput.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function loadBasicDashboard() {
+            // Basic fallback functionality
+            console.log('Loading basic dashboard...');
+            if (window.dashboard) {
+                window.dashboard.init();
+            } else if (window.AgentDashboard) {
+                window.dashboard = new AgentDashboard();
+                window.dashboard.init();
+            }
+        }
+
+        // Global functions for backward compatibility
+        function assignTask() {
+            if (window.enterpriseDashboard) {
+                const agentSelector = document.getElementById('agent-selector');
+                const selectedAgent = agentSelector?.querySelector('.agent-chip.selected')?.dataset.agentId;
+                if (selectedAgent) {
+                    window.enterpriseDashboard.assignTaskToAgent(selectedAgent);
+                } else {
+                    window.enterpriseDashboard.showNotification('Please select an agent first', 'warning');
+                }
+            }
+        }
+
+        function spawnNewAgent() {
+            if (window.enterpriseDashboard) {
+                window.enterpriseDashboard.showNotification('Spawning new agent...', 'info', 2000);
+                // Add your spawn logic here
+            }
+        }
+
+        function deployQuickTemplate(templateId) {
+            if (window.enterpriseDashboard) {
+                window.enterpriseDashboard.deployTemplate(templateId);
+            }
+        }
+
+        // Enhanced search functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('global-search');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const query = e.target.value.toLowerCase();
+                    // Add search functionality here
+                    console.log('Searching:', query);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
