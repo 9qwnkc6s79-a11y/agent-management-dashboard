@@ -108,7 +108,7 @@ class AgentDashboard {
     enhanceAgentData() {
         this.agents.forEach(agent => {
             // Calculate efficiency metrics
-            agent.efficiency = agent.tokens > 0 ? (agent.tokens / agent.cost).toFixed(0) : 0;
+            agent.efficiency = (agent.tokens > 0 && agent.cost > 0) ? (agent.tokens / agent.cost).toFixed(0) : 0;
             
             // Determine status level for better visualization
             agent.statusLevel = this.getStatusLevel(agent.status);
@@ -504,7 +504,7 @@ class AgentDashboard {
                 </div>
             </div>`;
 
-        const efficiencyScore = agent.tokens > 0 ? Math.min(100, Math.round((agent.tokens / agent.cost) / 100)) : 0;
+        const efficiencyScore = (agent.tokens > 0 && agent.cost > 0) ? Math.min(100, Math.round((agent.tokens / agent.cost) / 100)) : 0;
 
         card.innerHTML = `
             <div class="agent-status-indicator"></div>
@@ -656,7 +656,7 @@ class AgentDashboard {
                 <div class="grid-2" style="gap: var(--spacing-xl);">
                     <div>
                         <h4 style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">Agent Information</h4>
-                        <div style="space-y: var(--spacing-sm);">
+                        <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
                             <div style="display: flex; justify-content: space-between; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--border-primary);">
                                 <span>Purpose</span>
                                 <span style="color: var(--text-secondary);">${agent.purpose}</span>

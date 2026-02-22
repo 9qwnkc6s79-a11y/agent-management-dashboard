@@ -105,7 +105,7 @@ export default function handler(req, res) {
         enabled: true,
         schedule: { expr: '0 9 1 2 *' },
         delivery: { to: 'main' },
-        state: { nextRunAtMs: new Date('2026-02-01T09:00:00').getTime() }
+        state: { nextRunAtMs: (() => { const d = new Date(); d.setMonth(d.getMonth() + 1, 1); d.setHours(9, 0, 0, 0); return d.getTime(); })() }
       },
       {
         id: 'sample-weekly',

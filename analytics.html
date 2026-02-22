@@ -652,7 +652,7 @@
                         </div>
                         <div>${data.responseTime?.toFixed(1) || 0}s</div>
                         <div>${data.successRate?.toFixed(1) || 0}%</div>
-                        <div>$${((data.cost / data.tokens) * 1000).toFixed(4) || 0}</div>
+                        <div>$${data.tokens > 0 ? ((data.cost / data.tokens) * 1000).toFixed(4) : '0.0000'}</div>
                         <div>
                             <span class="trend-indicator trend-${trend}">
                                 ${trend === 'up' ? '↗' : trend === 'down' ? '↘' : '→'}
@@ -717,7 +717,7 @@
                 const totalCost = Object.values(this.costData).reduce((sum, data) => sum + data.cost, 0);
                 const totalTokens = Object.values(this.costData).reduce((sum, data) => sum + data.tokens, 0);
                 const avgEfficiency = Object.values(this.costData).reduce((sum, data) => sum + data.efficiency, 0) / this.agents.length;
-                const costPerTask = totalCost / (totalTokens / 1000) * 100; // Rough estimate
+                const costPerTask = totalTokens > 0 ? totalCost / (totalTokens / 1000) : 0;
 
                 document.getElementById('total-cost').textContent = `$${totalCost.toFixed(2)}`;
                 document.getElementById('total-tokens').textContent = `${(totalTokens / 1000000).toFixed(1)}M`;

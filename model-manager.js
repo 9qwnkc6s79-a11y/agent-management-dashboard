@@ -48,7 +48,7 @@ class ModelManager {
             currentCost: currentCost.toFixed(2),
             newCost: newCost.toFixed(2),
             savings: savings.toFixed(2),
-            savingsPercent: ((savings / currentCost) * 100).toFixed(1)
+            savingsPercent: currentCost > 0 ? ((savings / currentCost) * 100).toFixed(1) : '0.0'
         };
     }
 
