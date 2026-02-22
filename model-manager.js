@@ -130,7 +130,7 @@ class ModelManager {
         const dropdown = selector.querySelector('.model-dropdown');
         dropdown.addEventListener('change', (e) => {
             const newModel = e.target.value;
-            const impact = this.calculateCostImpact(agent.model, newModel, agent.tokens);
+            const impact = this.calculateCostImpact(agent.model, newModel, agent.tokens || 0);
             
             if (confirm(`Switch ${agent.name} to ${this.getModelInfo(newModel).name}?\n\nCost Impact: ${impact.savings > 0 ? 'Save' : 'Cost'} $${Math.abs(impact.savings)}/month`)) {
                 onModelChange(agent.id, newModel);

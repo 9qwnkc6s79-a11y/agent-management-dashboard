@@ -1099,7 +1099,8 @@ async function assignTask() {
             
             // Reset priority to normal
             document.querySelectorAll('.priority-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector('[data-priority="normal"]').classList.add('active');
+            const normalBtn = document.querySelector('[data-priority="normal"]');
+            if (normalBtn) normalBtn.classList.add('active');
         } else {
             showNotification('Failed to assign task to any agent', 'error');
         }
