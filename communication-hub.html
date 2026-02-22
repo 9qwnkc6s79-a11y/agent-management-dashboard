@@ -285,7 +285,7 @@
                 <a href="cron-manager.html" class="nav-link">Cron Jobs</a>
                 <a href="profiles/" class="nav-link">Profiles</a>
                 <a href="communication-hub.html" class="nav-link active">Communication</a>
-                <a href="#analytics" class="nav-link">Analytics</a>
+                <a href="analytics.html" class="nav-link">Analytics</a>
             </div>
         </nav>
     </header>
@@ -571,6 +571,7 @@
                     
                     const agentElement = document.createElement('div');
                     agentElement.className = 'agent-item';
+                    agentElement.dataset.agentId = agent.id;
                     agentElement.onclick = () => this.selectAgent(agent.id);
                     
                     agentElement.innerHTML = `
@@ -606,9 +607,10 @@
                 if (!this.currentAgent) return;
 
                 // Update active state
-                document.querySelectorAll('.agent-item').forEach(item => 
+                document.querySelectorAll('.agent-item').forEach(item =>
                     item.classList.remove('active'));
-                event.currentTarget.classList.add('active');
+                const clickedItem = document.querySelector(`.agent-item[data-agent-id="${agentId}"]`);
+                if (clickedItem) clickedItem.classList.add('active');
 
                 // Update chat header
                 document.getElementById('chat-title').textContent = this.currentAgent.name;

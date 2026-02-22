@@ -88,11 +88,8 @@ class AgentDashboard {
             
             // Add enhanced metrics
             this.enhanceAgentData();
-                
-                console.log('✅ Loaded live agent data:', data);
-            } else {
-                throw new Error('API request failed');
-            }
+
+            console.log('Loaded agent data:', data);
         } catch (error) {
             console.warn('Failed to load live data, using mock data:', error);
             this.agents = this.getMockAgents();
@@ -363,7 +360,7 @@ class AgentDashboard {
         );
         if (expensiveAgents.length > 0) {
             recommendations.push({
-                icon: '',
+                icon: '\u{1F4B0}',
                 text: `Consider switching ${expensiveAgents[0].name} to Sonnet for routine tasks (potential savings: ~$0.50/day)`
             });
         }
@@ -1407,7 +1404,6 @@ async function deployQuickTemplate(templateId) {
 let dashboard;
 document.addEventListener('DOMContentLoaded', function() {
     dashboard = new AgentDashboard();
+    // Export for debugging (must be set after initialization)
+    window.dashboard = dashboard;
 });
-
-// Export for debugging
-window.dashboard = dashboard;

@@ -559,9 +559,19 @@
             }
 
             async loadData() {
-                // Use existing agent data
-                this.agents = agentManager.getMockAgents();
-                
+                // Use existing agent data with fallback
+                if (typeof agentManager !== 'undefined' && agentManager.getMockAgents) {
+                    this.agents = agentManager.getMockAgents();
+                } else {
+                    this.agents = [
+                        { id: 'agent-dev', name: 'Development Agent', model: 'claude-sonnet-4', status: 'active', tokensUsed: 67840, costToday: 3.25 },
+                        { id: 'agent-main', name: 'Main Agent', model: 'claude-sonnet-4', status: 'active', tokensUsed: 45230, costToday: 2.45 },
+                        { id: 'agent-business', name: 'Business Agent', model: 'claude-sonnet-4', status: 'active', tokensUsed: 28930, costToday: 1.85 },
+                        { id: 'agent-health', name: 'Health Agent', model: 'claude-haiku', status: 'idle', tokensUsed: 12450, costToday: 0.65 },
+                        { id: 'agent-content', name: 'Content Agent', model: 'claude-sonnet', status: 'idle', tokensUsed: 19320, costToday: 0.95 }
+                    ];
+                }
+
                 // Generate mock analytics data
                 this.generateMockAnalytics();
                 this.updateMetrics();

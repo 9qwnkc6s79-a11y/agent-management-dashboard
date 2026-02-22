@@ -670,16 +670,9 @@ let enterpriseDashboard;
 document.addEventListener('DOMContentLoaded', () => {
     enterpriseDashboard = new EnterpriseAgentDashboard();
     window.enterpriseDashboard = enterpriseDashboard; // Global access
-    
-    // Initialize dashboard
+
+    // Initialize dashboard (init() already starts auto-refresh internally)
     enterpriseDashboard.init();
-    
-    // Setup auto-refresh
-    setInterval(() => {
-        if (!document.hidden) {
-            enterpriseDashboard.loadAgents();
-        }
-    }, 30000);
 });
 
 // Export for global access
