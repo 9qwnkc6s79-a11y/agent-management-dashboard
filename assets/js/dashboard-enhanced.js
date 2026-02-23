@@ -228,7 +228,7 @@ class EnterpriseAgentDashboard {
         try {
             this.setLoadingState(true);
             
-            const response = await fetch('http://localhost:8001/agents');
+            const response = await fetch('/api/agents');
             if (!response.ok) throw new Error('Failed to load agents');
             
             const data = await response.json();
@@ -431,7 +431,7 @@ class EnterpriseAgentDashboard {
         try {
             this.showNotification('Assigning task to agent...', 'info', 2000);
             
-            const response = await fetch(`http://localhost:8001/agents/${agentId}/tasks`, {
+            const response = await fetch(`/api/agents/${agentId}/tasks`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ task })
@@ -523,7 +523,7 @@ class EnterpriseAgentDashboard {
         try {
             this.showNotification('Terminating agent...', 'info', 2000);
             
-            const response = await fetch(`http://localhost:8001/agents/${agentId}`, {
+            const response = await fetch(`/api/agents/${agentId}`, {
                 method: 'DELETE'
             });
             
@@ -670,16 +670,9 @@ let enterpriseDashboard;
 document.addEventListener('DOMContentLoaded', () => {
     enterpriseDashboard = new EnterpriseAgentDashboard();
     window.enterpriseDashboard = enterpriseDashboard; // Global access
-    
-    // Initialize dashboard
+
+    // Initialize dashboard (init() already starts auto-refresh internally)
     enterpriseDashboard.init();
-    
-    // Setup auto-refresh
-    setInterval(() => {
-        if (!document.hidden) {
-            enterpriseDashboard.loadAgents();
-        }
-    }, 30000);
 });
 
 // Export for global access

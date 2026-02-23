@@ -88,11 +88,8 @@ class AgentDashboard {
             
             // Add enhanced metrics
             this.enhanceAgentData();
-                
-                console.log('✅ Loaded live agent data:', data);
-            } else {
-                throw new Error('API request failed');
-            }
+
+            console.log('Loaded agent data:', data);
         } catch (error) {
             console.warn('Failed to load live data, using mock data:', error);
             this.agents = this.getMockAgents();
@@ -111,7 +108,7 @@ class AgentDashboard {
     enhanceAgentData() {
         this.agents.forEach(agent => {
             // Calculate efficiency metrics
-            agent.efficiency = agent.tokens > 0 ? (agent.tokens / agent.cost).toFixed(0) : 0;
+            agent.efficiency = (agent.tokens > 0 && agent.cost > 0) ? (agent.tokens / agent.cost).toFixed(0) : 0;
             
             // Determine status level for better visualization
             agent.statusLevel = this.getStatusLevel(agent.status);
@@ -363,7 +360,7 @@ class AgentDashboard {
         );
         if (expensiveAgents.length > 0) {
             recommendations.push({
-                icon: '',
+                icon: '\u{1F4B0}',
                 text: `Consider switching ${expensiveAgents[0].name} to Sonnet for routine tasks (potential savings: ~$0.50/day)`
             });
         }
@@ -507,7 +504,7 @@ class AgentDashboard {
                 </div>
             </div>`;
 
-        const efficiencyScore = agent.tokens > 0 ? Math.min(100, Math.round((agent.tokens / agent.cost) / 100)) : 0;
+        const efficiencyScore = (agent.tokens > 0 && agent.cost > 0) ? Math.min(100, Math.round((agent.tokens / agent.cost) / 100)) : 0;
 
         card.innerHTML = `
             <div class="agent-status-indicator"></div>
@@ -659,7 +656,7 @@ class AgentDashboard {
                 <div class="grid-2" style="gap: var(--spacing-xl);">
                     <div>
                         <h4 style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">Agent Information</h4>
-                        <div style="space-y: var(--spacing-sm);">
+                        <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
                             <div style="display: flex; justify-content: space-between; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--border-primary);">
                                 <span>Purpose</span>
                                 <span style="color: var(--text-secondary);">${agent.purpose}</span>
@@ -1102,7 +1099,8 @@ async function assignTask() {
             
             // Reset priority to normal
             document.querySelectorAll('.priority-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector('[data-priority="normal"]').classList.add('active');
+            const normalBtn = document.querySelector('[data-priority="normal"]');
+            if (normalBtn) normalBtn.classList.add('active');
         } else {
             showNotification('Failed to assign task to any agent', 'error');
         }
@@ -1407,7 +1405,6 @@ async function deployQuickTemplate(templateId) {
 let dashboard;
 document.addEventListener('DOMContentLoaded', function() {
     dashboard = new AgentDashboard();
+    // Export for debugging (must be set after initialization)
+    window.dashboard = dashboard;
 });
-
-// Export for debugging
-window.dashboard = dashboard;

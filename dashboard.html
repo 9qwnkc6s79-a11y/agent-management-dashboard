@@ -13,10 +13,11 @@
             <nav class="nav">
                 <a href="#" class="nav-brand">Agent Command Center</a>
                 <div class="nav-links">
-                    <a href="#" class="nav-link active">Dashboard</a>
+                    <a href="dashboard.html" class="nav-link active">Dashboard</a>
                     <a href="cron-manager.html" class="nav-link">Schedule</a>
-                    <a href="#" class="nav-link" onclick="openProfileManager()">Profiles</a>
-                    <a href="#" class="nav-link" onclick="openAnalytics()">Analytics</a>
+                    <a href="communication-hub.html" class="nav-link">Communication</a>
+                    <a href="analytics.html" class="nav-link">Analytics</a>
+                    <a href="profiles/index.html" class="nav-link">Profiles</a>
                 </div>
             </nav>
         </div>
@@ -178,14 +179,17 @@
     <script src="model-manager.js"></script>
     <script>
         // Enhanced initialization with fallback
+        // Note: dashboard-enhanced.js already initializes on DOMContentLoaded.
+        // This fallback only runs if the enhanced dashboard failed to load.
         document.addEventListener('DOMContentLoaded', function() {
-            // Try to load enhanced dashboard first
-            if (window.EnterpriseAgentDashboard) {
-                window.enterpriseDashboard = new EnterpriseAgentDashboard();
-                window.enterpriseDashboard.init();
-            } else {
-                // Fallback to basic dashboard
-                loadBasicDashboard();
+            if (!window.enterpriseDashboard) {
+                if (window.EnterpriseAgentDashboard) {
+                    window.enterpriseDashboard = new EnterpriseAgentDashboard();
+                    window.enterpriseDashboard.init();
+                } else {
+                    // Fallback to basic dashboard
+                    loadBasicDashboard();
+                }
             }
         });
 
@@ -198,11 +202,7 @@
         }
 
         function openAnalytics() {
-            if (window.enterpriseDashboard) {
-                window.enterpriseDashboard.showNotification('Analytics dashboard coming soon!', 'info');
-            } else {
-                alert('Analytics dashboard coming soon!');
-            }
+            window.location.href = 'analytics.html';
         }
 
         function openTaskModal() {

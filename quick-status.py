@@ -76,7 +76,7 @@ def get_agent_status():
     total_tokens = sum(s.get('totalTokens', 0) for s in sorted_agents)
     
     print(f"Total Tokens: {total_tokens:,}")
-    print(f"Average per Agent: {total_tokens // len(sorted_agents):,}")
+    print(f"Average per Agent: {total_tokens // max(len(sorted_agents), 1):,}")
     print(f"Tokens per $1: {total_tokens / max(total_cost, 0.01):.0f}")
     print()
     

@@ -48,7 +48,7 @@ class ModelManager {
             currentCost: currentCost.toFixed(2),
             newCost: newCost.toFixed(2),
             savings: savings.toFixed(2),
-            savingsPercent: ((savings / currentCost) * 100).toFixed(1)
+            savingsPercent: currentCost > 0 ? ((savings / currentCost) * 100).toFixed(1) : '0.0'
         };
     }
 
@@ -130,7 +130,7 @@ class ModelManager {
         const dropdown = selector.querySelector('.model-dropdown');
         dropdown.addEventListener('change', (e) => {
             const newModel = e.target.value;
-            const impact = this.calculateCostImpact(agent.model, newModel, agent.tokens);
+            const impact = this.calculateCostImpact(agent.model, newModel, agent.tokens || 0);
             
             if (confirm(`Switch ${agent.name} to ${this.getModelInfo(newModel).name}?\n\nCost Impact: ${impact.savings > 0 ? 'Save' : 'Cost'} $${Math.abs(impact.savings)}/month`)) {
                 onModelChange(agent.id, newModel);
@@ -157,7 +157,7 @@ class AgentTemplates {
         this.templates = {
             'health-coach': {
                 name: 'Health Coach',
-                icon: '',
+                icon: '\u{1F3CB}',
                 purpose: 'Fitness tracking and wellness guidance',
                 model: 'claude-sonnet-4-20250514',
                 soul: `# Health Coach Agent
@@ -190,7 +190,7 @@ You are a knowledgeable health and fitness coach focused on helping users achiev
             
             'business-analyst': {
                 name: 'Business Analyst',
-                icon: '',
+                icon: '\u{1F4CA}',
                 purpose: 'Data analysis and business intelligence',
                 model: 'claude-opus-4-5',
                 soul: `# Business Analyst Agent
@@ -218,7 +218,7 @@ You are a skilled business analyst focused on data-driven insights and strategic
             
             'customer-support': {
                 name: 'Customer Support',
-                icon: '',
+                icon: '\u{1F3E7}',
                 purpose: 'Customer service and support',
                 model: 'claude-sonnet-4-20250514',
                 soul: `# Customer Support Agent
@@ -248,7 +248,7 @@ You provide excellent customer service with empathy, efficiency, and professiona
             
             'content-creator': {
                 name: 'Content Creator',
-                icon: '',
+                icon: '\u{270D}',
                 purpose: 'Content writing and creative projects',
                 model: 'claude-sonnet-4-20250514',
                 soul: `# Content Creator Agent
@@ -274,8 +274,8 @@ You are a creative content writer who produces engaging, high-quality content ac
             },
             
             'developer-assistant': {
-                name: 'Developer Assistant', 
-                icon: '',
+                name: 'Developer Assistant',
+                icon: '\u{1F4BB}',
                 purpose: 'Software development and technical guidance',
                 model: 'claude-sonnet-4-20250514',
                 soul: `# Developer Assistant Agent
@@ -300,7 +300,7 @@ You are an experienced software developer who helps with coding, debugging, and 
             
             'project-manager': {
                 name: 'Project Manager',
-                icon: '',
+                icon: '\u{1F4CB}',
                 purpose: 'Project coordination and team management',
                 model: 'claude-sonnet-4-20250514',
                 soul: `# Project Manager Agent

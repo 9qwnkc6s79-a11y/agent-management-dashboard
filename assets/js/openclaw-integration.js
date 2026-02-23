@@ -6,7 +6,7 @@
 class OpenClawIntegration {
     constructor() {
         this.baseUrl = '/api'; // OpenClaw API base URL
-        this.wsUrl = 'ws://localhost:8080/ws'; // WebSocket endpoint
+        this.wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`; // WebSocket endpoint
         this.ws = null;
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 5;
